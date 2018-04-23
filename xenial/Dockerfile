@@ -71,12 +71,20 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+    && curl -fSL https://github.com/openresty/sregex/archive/v0.0.1.tar.gz -o sregex.tar.gz \
+    && tar xzf sregex.tar.gz \
+    && cd /tmp/sregex-0.0.1 \
+    && make && make install \
+    && cd /tmp \
+    && curl -fSL https://github.com/openresty/replace-filter-nginx-module/archive/v0.01rc5.tar.gz -o replace-filter-nginx-module.tar.gz \
+    && tar xzf replace-filter-nginx-module.tar.gz \
+    && ls -la \
     && curl -fSL https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
     && cd /tmp/openresty-${RESTY_VERSION} \
-    && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+    && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} --add-module=/tmp/replace-filter-nginx-module-0.01rc5 \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
     && cd /tmp \
@@ -99,7 +107,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && rm -rf luarocks-${RESTY_LUAROCKS_VERSION} luarocks-${RESTY_LUAROCKS_VERSION}.tar.gz \
     && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
     && ln -sf /dev/stdout /usr/local/openresty/nginx/logs/access.log \
-    && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log
+    && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log \
+    && ldconfig
+
 
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:/usr/local/openresty/luajit/bin:/usr/local/openresty/nginx/sbin:/usr/local/openresty/bin
